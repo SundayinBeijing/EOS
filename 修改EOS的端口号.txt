@@ -1,0 +1,4 @@
+1.修改Tomcat中的server.xml文件中端口号，最好三个都改
+2.修改apps_config文件夹下default，governor，workspace三个文件夹中的startup.conf中的AdminPort
+3.启动项目，在governor中将原应用服务删除，添加一个新的应用服务，服务为在default中修改的port
+4.修改应用服务器中Tomcat的端口号

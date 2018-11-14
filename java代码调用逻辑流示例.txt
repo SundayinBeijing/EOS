@@ -1,0 +1,18 @@
+@Bizlet("getSCADADataByStName")
+	public void ArrayOfStringTolist() throws Throwable{
+		ILogicComponent comp = LogicComponentFactory.create("cn.aerotop.extend.scada.scada");
+		String[] param = {"CNG_BX_JPT.PV","CNG_BX_CPT.PV"};
+		Object[] obj = new Object[1];
+		obj[0] = param;
+		Object[] result = comp.invoke("realdb", obj);
+		DataObjectImpl cos = (DataObjectImpl) result[1];
+		List l = cos.getList("string");
+		System.out.println(l.size());
+		
+	}
+
+
+cn.aerotop.extend.scada.scada是逻辑构件的全名
+Object[] result = comp.invoke("realdb", obj);realdb是逻辑流名称
+obj是参数数组
+result是返回值数组

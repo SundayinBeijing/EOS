@@ -1,0 +1,2 @@
+1.时间的时分秒被冲掉一半都是因为form.getData(false,true);
+改成form.getData(true,true);就可以了。

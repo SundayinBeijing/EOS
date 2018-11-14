@@ -1,0 +1,21 @@
+EOS需要配置一个新的数据源时，用户名验证不通过怎么办？
+
+1.如果是新增一个数据源，则找到该项目，进入该项目所在的Tomcat中，找到webapps目录，然后到
+	webapps\governor\governor\management\datasource这个目录下找到addDatasource.jsp文件，找到
+	
+	<h:text id="jdbc_c3p0_username"	property="jdbc/c3p0Username" maxlength="64"
+	validateAttr="allowNull=false;type=LetterAhead_NumLettMidDown;" onblur="checkInput(this)" />
+	
+	这个标签,将这个标签中的type=LetterAhead_NumLettMidDown;去掉 变成
+	
+	<h:text id="jdbc_c3p0_username"	property="jdbc/c3p0Username" maxlength="64"
+	validateAttr="allowNull=false;" onblur="checkInput(this)" />
+2.如果是修改一个数据源，则到webapps\governor\governor\management\datasource目录下找updateDatasource.jsp文件，找到
+
+	<h:text id="jdbc_c3p0_username"	property="jdbc/c3p0Username" maxlength="64"
+	validateAttr="allowNull=false;type=LetterAhead_NumLettMidDown;" onblur="checkInput(this)" />
+	
+	这个标签,将这个标签中的type=LetterAhead_NumLettMidDown;去掉 变成
+	
+	<h:text id="jdbc_c3p0_username"	property="jdbc/c3p0Username" maxlength="64"
+	validateAttr="allowNull=false;" onblur="checkInput(this)" />

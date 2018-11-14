@@ -1,0 +1,24 @@
+<select id="queryIdsByValue" parameterClass="java.util.HashMap" resultClass="java.lang.String">
+		select 
+			vg_id as "id"
+		from 
+			bd_group_valve
+		where vl_id in(
+		select  id  from  bd_valve   where 1=1 
+		<isNotEmpty prepend="and" property="id">
+		  <![CDATA[
+          	id in ($id$)
+		  ]]>
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="vlCode">
+		  <![CDATA[
+          	 vlCode like CONCAT(CONCAT('%', #vlCode#),'%')
+		  ]]>
+        </isNotEmpty>
+        	<isNotEmpty prepend="and" property="vlName">
+		  <![CDATA[
+          	 vlName like CONCAT(CONCAT('%', #vlName#),'%')
+		  ]]>
+        </isNotEmpty>
+        )
+    </select>

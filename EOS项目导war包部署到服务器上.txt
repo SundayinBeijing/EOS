@@ -1,0 +1,10 @@
+1.Tomcat准备
+	EOS新建，产生出来的纯净Tomcat，将该Tomcat的webapps下的东西只保留default和governor即可（如果需要做流程，还需要将workspace也保留），WebApps下的其他东西直接删除即可，然后将整个Tomcat文件拷到服务器上即可。
+2.项目导成war包
+	直接选中要导出的项目，然后选择导出部署包即可
+3.项目war包导入到Tomcat中
+	首先需要启动服务器上的Tomcat，报错没关系，只要能打开governor即可，然后通过governor页面进行配置数据库和管理部署包。管理部署包就是导入部署包，选中导出的war包，先上传，然后点击下一步，进行部署。最后重新启动Tomcat即可。
+	
+	
+4.导入补丁包
+	项目有修改或增加的东西，可以先导出补丁包，然后通过governor导入到Tomcat中，操作和导入war包相似。
