@@ -1,1 +1,57 @@
+1.查询某一天的信息
 
+EOS的criteria在查询时间时，多使用_min和_max来查询一个时间段，没有具体查询某一天的查询方式（当然，也可能是有，但是我不会使用罢了），
+我的查询某一天也是在这个基础上进行查询的。
+
+例：
+  页面：
+    <td colspan="1">
+      <input class="nui-datepicker" id="wanchengshijian" width="150px" emptyText="完成时间" onvaluechanged="judgeTime(0)"/> 
+      <input class="nui-hidden" width="150px" name="criteria/_expr[1]/completionTime"/>
+      <input class="nui-hidden" name="criteria/_expr[1]/_op" value="between">
+      <input class="nui-hidden" id="start" width="150px" name="criteria/_expr[1]/_min" />
+      <input class="nui-hidden" id="end" width="150px" name="criteria/_expr[1]/_max"  />
+      <!-- <input class="nui-hidden" name="criteria/_expr[1]/_pattern" value="yyyy-MM-dd"/> -->
+    </td>
+    
+  js方法：
+    function judgeTime(type){
+			if(type==0){
+				nui.get("start").setValue(nui.formatDate(nui.get("wanchengshijian").getValue(),"yyyy-MM-dd")+" 00:00:00");
+				nui.get("end").setValue(nui.formatDate(nui.get("wanchengshijian").getValue(),"yyyy-MM-dd")+" 23:59:59");
+			}
+		}
+    
+  运行：
+    在页面选择某一日，js方法自动将该日期转成，从该日期0点起到该日期23点59分59秒，依然利用的是criteria的查询，不过页面上使用起来，给人的感觉就完全不同了。
+    
+    
+2.查询字段为空
+  我们知道，EOS的criteria查询，如果页面不输入值时，是视为该条件不存在的，但是如果我们想要查询的字段为空怎么办？（类似于SQL语句中的 is null）
+  我的解决方法：
+    依然是通过页面js来解决。
+      例：
+<td colspan="1">
+  <input class="nui-dictcombobox" id="huifang" dictTypeId="IS_YES_NO" width="150px" emptyText="是否回访" onvaluechanged="judgeTime(1)"/> 
+  <input class="nui-hidden" id="returnVisit2" width="150px"  name="criteria/_expr[9]/returnVisit" /> 
+  <input class="nui-hidden" id="rv2Value" name="criteria/_expr[9]/_op" value="=">
+</td>
+
+js方法：
+  function judgeTime(type){
+    if(type==1){
+      var str=nui.get("huifang").getValue();
+      if(str=="1"){
+        str=null;
+        nui.get("rv2Value").setValue("null");
+        nui.get("returnVisit2").setValue(str);
+      }else{
+        nui.get("rv2Value").setValue("=");
+        nui.get("returnVisit2").setValue(str);
+      }
+    }
+  }
+  
+ 运行：
+  由于我的查询是希望页面选择“是”，则查询数据库中状态为“0”的数据，而选择“否”时，则查询数据库中状态为空的数据，不选择时，则查询全部。所以查询的_op
+  默认是“=”，但是查询状态为空时，需要将_op的值转换成“null”，所以我通过js方法把值criteria内的数据转换了。
