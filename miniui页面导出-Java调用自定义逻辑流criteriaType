@@ -1,0 +1,133 @@
+页面部分
+	html
+		<a id="exportExcel" plain="true" class="nui-button" iconCls="icon-download" onclick="exportExcel()">导出Excel</a> 
+		<form id="excelForm"  action="exportExcel" method="post" target="excelIFrame">
+			<input type="hidden" name="columns" id="excelData" />
+			<input type="hidden" name="key" id="queryKey" />
+		</form>
+		<iframe id="excelIFrame" name="excelIFrame" style="display:none;"></iframe>
+	js方法 ---说明grid为miniui的datagrid
+		function exportExcel(){
+        	var columns = grid.columns;
+        	var form = new nui.Form("#orderForm");
+			var queryKey = form.getData(false, false);
+        	function getColumns(columns) {
+                var cols = [];
+                for (var i = 1; i < columns.length; i++) {
+                    var column = columns[i];
+
+                    var col = { header: column.header, field: column.field,visible:column.visible};
+                    if (column.columns) {
+                        col.columns = getColumns(column.columns);
+                    }
+                    cols.push(col);
+
+                }
+                return cols;
+            }
+            var columns2 = getColumns(columns);
+            var json = mini.encode(columns2);
+            var key=nui.encode(queryKey);                        
+            document.getElementById("excelData").value = json;
+            document.getElementById("queryKey").value = key;
+            var excelForm = document.getElementById("excelForm");
+            excelForm.submit();
+        }
+
+Java后台部分
+	servlet类里面的方法
+		protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+				throws ServletException, IOException {
+			OutputStream out=resp.getOutputStream();
+			String fname = "grid";
+			resp.reset();//清空输出流
+			resp.setCharacterEncoding("UTF-8");//设置相应内容的编码格式
+			fname = java.net.URLEncoder.encode(fname,"UTF-8");
+			resp.setHeader("Content-Disposition","attachment;filename="+new String(fname.getBytes("UTF-8"),"GBK")+".xls");
+			resp.setContentType("application/ms-excel");//定义输出类型
+			String json = req.getParameter("columns");
+			List list=new ArrayList();
+			List<Map> rows = (List<Map>) JSONArray.parse(json);
+			//对rows做处理，将visible=false的列去除
+			List<Map> rows2=new ArrayList<Map>();
+			for(int i=0;i<rows.size();i++){
+				Map map=rows.get(i);
+				if((Boolean) map.get("visible")){
+					rows2.add(map);
+				}
+			}
+			try {
+				DataObject[] queryResult = SearchEmployees(req, resp);//需要的数据
+				// 创建Excel工作薄     
+				WritableWorkbook workbook = Workbook.createWorkbook(out);      
+				// 添加第一个工作表并设置第一个Sheet的名字     
+				WritableSheet sheet = workbook.createSheet("grid1", 0);     
+				Label label;  
+				//写出列名
+				for(int i=0;i<rows2.size();i++){      
+					Map hm = rows2.get(i);
+					Iterator iterator = hm.keySet().iterator();  
+					label = new Label(i,0,hm.get("header").toString());
+					sheet.addCell(label);     
+				}   
+				//写出数据
+				//ArrayList list = (ArrayList)data.get("data");  
+				for (int i = 1; i < queryResult.length; i++) {
+					DataObjectImpl hm1 = (DataObjectImpl) queryResult[i];
+					for(int j=0;j<rows2.size();j++){     
+						Map hm = rows2.get(j);
+						String key =hm.get("field").toString();
+						String value=String.valueOf(hm1.getString(key));
+						label = new Label(j,i,value);
+						sheet.addCell(label); 
+					}
+				}       
+					
+				// 写入数据     
+				workbook.write();     
+				// 关闭文件     
+				workbook.close();  
+				out.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} catch (Throwable e) {
+				// TODO 自动生成的 catch 块
+				e.printStackTrace();
+			}
+		}
+		
+		public DataObject[] SearchEmployees(HttpServletRequest request, HttpServletResponse response) throws Throwable
+		{     
+			//查询条件
+			String key = request.getParameter("key");//获取数据
+			//组装数据
+			Map map=(Map) JSONObject.parse(key);
+			//DataObject criteriaType = DataFactory.INSTANCE.create("com.primeton.das.criteria","criteriaType");
+			CriteriaType criteriaType = CriteriaType.FACTORY.create();
+			//criteriaType.set("_expr[]/intType","1,2,3,4");
+			//criteriaType.set("_expr[]/_op","in");
+			for(Object mapkey : map.keySet()){
+				String mapkey1=(String) mapkey;
+				String mapkey2=mapkey1.replace("criteria/", "");
+				criteriaType.set(mapkey2,map.get(mapkey));
+			}
+			PageCond page=(PageCond) DataFactory.INSTANCE.create("com.eos.foundation","PageCond");
+			Integer pageIndex = 0;
+			Integer pageSize = 1048576;//老版Excel最多行数
+			//page.setIsCount(false);
+			//调用逻辑流
+			ILogicComponent comp = LogicComponentFactory.create("com.aerotop.dispatch.basicinformationorderbiz");
+			//Map param = new HashMap();
+			//param.put("criteria", criteriaType);
+			Object[] obj = new Object[]{criteriaType,page,pageIndex,pageSize};
+			//obj[0] = param;
+			Object[] result = comp.invoke("queryBasicInformationOrderList", obj);
+			DataObject[] cos =  (DataObject[]) result[0];
+			/*BasicinfoAppo basic=new BasicinfoAppoImpl();
+			for(int i=0;i<cos.length;i++){
+				DataObjectImpl doji= (DataObjectImpl) cos[i];
+				String orderNum=doji.getString("orderNum");
+			}*/
+			
+			return cos;
+		}
